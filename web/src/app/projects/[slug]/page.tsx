@@ -5,6 +5,7 @@ import {useAuth} from "@/context/AuthContext";
 import StarRating from "@/components/StarRating";
 import Avatar from "@/components/Avatar";
 import Link from "next/link";
+import Image from "next/image";
 import {
 	ON_CHAIN_ENABLED,
 	rateProjectOnChain,
@@ -33,6 +34,7 @@ interface Project {
 	github_repos?: { label: string; url: string }[];
 	user_id: number;
 	username?: string;
+	logo_url?: string;
 	created_at: string;
 }
 
@@ -325,9 +327,19 @@ export default function ProjectDetailPage({
 			{/* Header */}
 			<div className="mb-8 animate-in">
 				<div className="flex items-start gap-4 mb-4">
-					<div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-nova/30 to-plasma/30 border border-nova/20 flex items-center justify-center text-2xl font-bold text-nova-bright shrink-0">
-						{project.name[0]}
-					</div>
+					<div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-nova/30 to-plasma/30 border border-nova/20 flex items-center justify-center text-2xl font-bold text-nova-bright shrink-0 overflow-hidden">
+					{project.logo_url ? (
+						<Image
+							src={project.logo_url}
+							alt={`${project.name} logo`}
+							width={64}
+							height={64}
+							className="w-full h-full object-cover"
+						/>
+					) : (
+						project.name[0]
+					)}
+				</div>
 					<div className="min-w-0 flex-1">
 						<div className="flex items-center gap-3 flex-wrap">
 							<h1 className="font-display font-bold text-3xl sm:text-4xl text-starlight">
