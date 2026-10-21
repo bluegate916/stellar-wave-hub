@@ -3,6 +3,17 @@ import {dirname} from "node:path";
 import {fileURLToPath} from "node:url";
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        // Supabase Storage — project logos uploaded via /api/upload
+        // Matches: https://<project-ref>.supabase.co/storage/v1/object/public/**
+        protocol: "https",
+        hostname: "*.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
+    ],
+  },
   async headers() {
     return [
       {
