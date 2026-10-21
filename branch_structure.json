@@ -1,0 +1,18 @@
+{
+  "default_branch": "main",
+  "branches": [
+    "fix/issue-420-show-the-claimer-and-a-claim-release-button-in",
+    "main",
+    "origin"
+  ],
+  "parent": {
+    "fix/issue-420-show-the-claimer-and-a-claim-release-button-in": "main",
+    "main": null,
+    "origin": "main"
+  },
+  "order": [
+    "main",
+    "fix/issue-420-show-the-claimer-and-a-claim-release-button-in",
+    "origin"
+  ]
+}
