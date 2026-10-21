@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 
 interface ProjectCardProps {
   project: {
@@ -107,8 +108,18 @@ export default function ProjectCard({ project, index = 0, badge }: ProjectCardPr
 
       {/* Header */}
       <div className="flex items-start gap-3">
-        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-nova/30 to-plasma/30 border border-nova/20 flex items-center justify-center shrink-0 text-lg font-bold text-nova-bright group-hover:from-nova/40 group-hover:to-plasma/40 transition-all">
-          {project.name[0]}
+        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-nova/30 to-plasma/30 border border-nova/20 flex items-center justify-center shrink-0 text-lg font-bold text-nova-bright group-hover:from-nova/40 group-hover:to-plasma/40 transition-all overflow-hidden">
+          {project.logo_url ? (
+            <Image
+              src={project.logo_url}
+              alt={`${project.name} logo`}
+              width={44}
+              height={44}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            project.name[0]
+          )}
         </div>
         <div className="min-w-0 flex-1">
           <h3 className="font-semibold text-starlight group-hover:text-nova-bright transition-colors truncate">
