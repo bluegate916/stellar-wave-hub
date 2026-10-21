@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import SubmissionNotes from "@/components/SubmissionNotes";
 
@@ -15,6 +15,10 @@ interface QueueProject {
   github_repos?: { label: string; url: string }[];
   username: string | null;
   created_at: string;
+  claimed_by?: string | null;
+  claimed_at?: string | null;
+  claimed_by_me?: boolean;
+  can_claim?: boolean;
 }
 
 function timeAgo(dateStr: string) {
@@ -30,14 +34,30 @@ function timeAgo(dateStr: string) {
 }
 
 export default function QueuePage() {
+  const queryClient = useQueryClient();
   const { data, isLoading } = useQuery<{ projects: QueueProject[]; total: number }>({
     queryKey: ["project-queue"],
     queryFn: () => fetch("/api/projects/queue").then((r) => r.json()),
     refetchInterval: 30000,
   });
 
+  const claimMutation = useMutation({
+    mutationFn: ({ id, action }: { id: number; action: "claim" | "release" }) =>
+      fetch(`/api/projects/queue/${id}/${action}`, { method: "POST" }).then(async (r) => {
+        if (!r.ok) {
+          const body = await r.json().catch(() => ({}));
+          throw new Error(body.error || `Failed to ${action}`);
+        }
+        return r.json();
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["project-queue"] });
+    },
+  });
+
   const projects = data?.projects || [];
   const total = data?.total || 0;
+  const pendingId = claimMutation.isPending ? claimMutation.variables?.id : null;
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -106,6 +126,12 @@ export default function QueuePage() {
                     <span className="tag bg-solar/10 text-solar-bright border border-solar/20 text-xs">
                       Pending
                     </span>
+                    {project.claimed_by && (
+                      <span className="tag bg-nova/10 text-nova-bright border border-nova/20 text-xs">
+                        Reviewing: @{project.claimed_by}
+                        {project.claimed_at ? ` (${timeAgo(project.claimed_at)})` : ""}
+                      </span>
+                    )}
                   </div>
 
                   <p className="text-sm text-moonlight/80 mb-3 line-clamp-2">
@@ -148,6 +174,35 @@ export default function QueuePage() {
                       </a>
                     )}
                   </div>
+
+                  {project.can_claim && (
+                    <div className="mt-3 flex items-center gap-2">
+                      {project.claimed_by ? (
+                        <button
+                          type="button"
+                          onClick={() => claimMutation.mutate({ id: project.id, action: "release" })}
+                          disabled={claimMutation.isPending}
+                          className="btn-ghost text-xs disabled:opacity-50"
+                        >
+                          {claimMutation.isPending ? "Releasing..." : "Release"}
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => claimMutation.mutate({ id: project.id, action: "claim" })}
+                          disabled={claimMutation.isPending}
+                          className="btn-nova text-xs disabled:opacity-50"
+                        >
+                          {claimMutation.isPending ? "Claiming..." : "Claim"}
+                        </button>
+                      )}
+                      {project.claimed_by && !project.claimed_by_me && (
+                        <span className="text-xs text-solar-bright">
+                          Claimed by another reviewer — approve/reject with care
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
               <SubmissionNotes projectId={project.id} />
